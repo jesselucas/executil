@@ -11,6 +11,9 @@ import (
 // and stderr will be sent to it
 var OutputChan chan string
 
+// Semantic Version
+const VERSION = "0.0.1"
+
 // SetOutputChan Setter function to set OutputChan
 func SetOutputChan(outputChan chan string) {
 	OutputChan = outputChan
