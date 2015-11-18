@@ -1,6 +1,6 @@
 Exec Util
 ===========
-`executil` is a go (golang) convenience utility package.
+`executil` is a go (golang) convenience utility package for [os.exec](https://golang.org/pkg/os/exec/).
 
 ## Install
 `go get -u github.com/jesselucas/executil`
