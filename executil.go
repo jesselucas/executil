@@ -3,7 +3,6 @@ package executil
 import (
 	"bufio"
 	"fmt"
-	"os"
 	"os/exec"
 )
 
@@ -20,7 +19,7 @@ func SetOutputChan(outputChan chan string) {
 }
 
 // CmdStart creates exec.Command and calls Start()
-func CmdStart(commandName string, arg ...string) {
+func CmdStart(commandName string, arg ...string) error {
 	// run protoc command (protoc --go_out=plugins=grpc:. $proto)
 	// execute cmd
 	cmd := exec.Command(commandName, arg...)
@@ -29,19 +28,19 @@ func CmdStart(commandName string, arg ...string) {
 	createPipeScanners(cmd, commandName)
 
 	// start the command
-	start(cmd)
+	return start(cmd)
 }
 
-func start(cmd *exec.Cmd) {
+func start(cmd *exec.Cmd) error {
 	if err := cmd.Start(); err != nil {
-		fmt.Printf(bold("ERROR:")+"\n  Error: %s", err.Error())
-		os.Exit(1)
+		return fmt.Errorf(bold("ERROR:")+"\n  Error: %s", err.Error())
 	}
 
 	if err := cmd.Wait(); err != nil {
-		fmt.Printf(bold("ERROR:")+"\n  Error: %s", err.Error())
-		os.Exit(1)
+		return fmt.Errorf(bold("ERROR:")+"\n  Error: %s", err.Error())
 	}
+
+	return nil
 }
 
 // Create stdout, and stderr pipes for given *Cmd

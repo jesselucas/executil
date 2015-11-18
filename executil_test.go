@@ -2,6 +2,7 @@ package executil
 
 import (
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -17,7 +18,11 @@ func TestSetOutputChan(t *testing.T) {
 	for _, test := range tests {
 		outputChan := make(chan string)
 		SetOutputChan(outputChan)
-		CmdStart(test.command, test.input)
+		err := CmdStart(test.command, test.input)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 
 		out := <-outputChan
 		fmt.Println(out)
@@ -35,6 +40,10 @@ func TestCmdStart(t *testing.T) {
 	}
 	for _, test := range tests {
 		SetOutputChan(nil) // make sure there isn't an outputChan set
-		CmdStart(test.command, test.input)
+		err := CmdStart(test.command, test.input)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	}
 }
