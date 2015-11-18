@@ -47,3 +47,24 @@ func TestCmdStart(t *testing.T) {
 		}
 	}
 }
+
+func TestSetOutputPrefix(t *testing.T) {
+	tests := []struct {
+		command string
+		prefix  string
+		input   string
+		output  string
+	}{
+		{"echo", "new-prefix", "TestSetOutputChan", "TestSetOutputChan"},
+		{"echo", "echoandthebunnymen", "TestSetOutputChan again", "TestSetOutputChan again"},
+	}
+	for _, test := range tests {
+		SetOutputChan(nil) // make sure there isn't an outputChan set
+		SetOutputPrefix(test.prefix)
+		err := CmdStart(test.command, test.input)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
+}

@@ -10,12 +10,21 @@ import (
 // and stderr will be sent to it
 var OutputChan chan string
 
-// Semantic Version
-const VERSION = "0.0.2"
+// If OutputPrefix is not set the
+// command will be the prefix
+var OutputPrefix string
 
-// SetOutputChan Setter function to set OutputChan
+// Semantic Version
+const VERSION = "0.0.3"
+
+// SetOutputChan setter function to set OutputChan
 func SetOutputChan(outputChan chan string) {
 	OutputChan = outputChan
+}
+
+// SetOutputPrefix setter function to set OutputPrefix
+func SetOutputPrefix(prefix string) {
+	OutputPrefix = prefix
 }
 
 // CmdStart creates exec.Command and calls Start()
@@ -24,8 +33,14 @@ func CmdStart(commandName string, arg ...string) error {
 	// execute cmd
 	cmd := exec.Command(commandName, arg...)
 
+	// set prefix for pipe scanners
+	prefix := commandName
+	if OutputPrefix != "" {
+		prefix = OutputPrefix
+	}
+
 	// go routines to scan command out and err
-	err := createPipeScanners(cmd, commandName)
+	err := createPipeScanners(cmd, prefix)
 	if err != nil {
 		return err
 	}
