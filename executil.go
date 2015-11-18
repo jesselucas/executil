@@ -75,6 +75,8 @@ func createPipeScanners(cmd *exec.Cmd, prefix string) error {
 			scannerOutput(prefix, outScanner.Text())
 		}
 	}()
+
+	return nil
 }
 
 func scannerOutput(prefix string, text string) {
