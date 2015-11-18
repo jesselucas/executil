@@ -1,6 +1,6 @@
 Exec Util
 ===========
-`executil` is a go (golang) convenience utility package for [os/exec](https://golang.org/pkg/os/exec/).
+`executil` is a go (golang) convenience utility package for [os/exec](https://golang.org/pkg/os/exec/) that will output stdout and stderr to the terminal.
 
 ## Install
 `go get -u github.com/jesselucas/executil`
@@ -14,6 +14,8 @@ if err != nil {
   log.Fatal(err)
 }
 ```
+
+Resulting output: `[echo] test echo`
 
 ### SetOutputChan
 Optionally you can pass an output channel to send the command stdout and stderr output. If there is an output channel set CmdStart will not print the output but instead send it to the channel.
@@ -36,3 +38,5 @@ if err != nil {
   log.Fatal(err)
 }
 ```
+
+Resulting output: `[echoandthebunnymen] test echo`
