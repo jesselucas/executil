@@ -17,8 +17,9 @@ func TestSetOutputChan(t *testing.T) {
 	}
 	for _, test := range tests {
 		outputChan := make(chan string)
-		SetOutputChan(outputChan)
-		err := CmdStart(test.command, test.input)
+		cmd := Command(test.command, test.input)
+		cmd.SetOutputChan(outputChan)
+		err := cmd.StartWithOutput()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -29,7 +30,7 @@ func TestSetOutputChan(t *testing.T) {
 	}
 }
 
-func TestCmdStart(t *testing.T) {
+func TestStart(t *testing.T) {
 	tests := []struct {
 		command string
 		input   string
@@ -39,8 +40,8 @@ func TestCmdStart(t *testing.T) {
 		{"echo", "TestCmdStart again", "TestCmdStart again"},
 	}
 	for _, test := range tests {
-		SetOutputChan(nil) // make sure there isn't an outputChan set
-		err := CmdStart(test.command, test.input)
+		cmd := Command(test.command, test.input)
+		err := cmd.StartWithOutput()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -59,9 +60,9 @@ func TestSetOutputPrefix(t *testing.T) {
 		{"echo", "echoandthebunnymen", "TestSetOutputChan again", "TestSetOutputChan again"},
 	}
 	for _, test := range tests {
-		SetOutputChan(nil) // make sure there isn't an outputChan set
-		SetOutputPrefix(test.prefix)
-		err := CmdStart(test.command, test.input)
+		cmd := Command(test.command, test.input)
+		cmd.SetOutputPrefix(test.prefix)
+		err := cmd.StartWithOutput()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)

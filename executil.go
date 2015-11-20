@@ -6,37 +6,42 @@ import (
 	"os/exec"
 )
 
-// If OutputChan is set the stdout
-// and stderr will be sent to it
-var OutputChan chan string
-
-// If OutputPrefix is not set the
-// command will be the prefix
-var OutputPrefix string
-
 // Semantic Version
-const VERSION = "0.0.3"
+const VERSION = "0.0.4"
+
+// Cmd struct embeds exec.Cmd
+type Cmd struct {
+	OutputChan   chan string
+	OutputPrefix string
+	*exec.Cmd
+}
+
+// Command returns a an executil Cmd struct with
+// an exec.Cmd struct embedded in it
+func Command(name string, arg ...string) *Cmd {
+	cmd := new(Cmd)
+
+	// set the exec.Cmd
+	cmd.Cmd = exec.Command(name, arg...)
+	return cmd
+}
 
 // SetOutputChan setter function to set OutputChan
-func SetOutputChan(outputChan chan string) {
-	OutputChan = outputChan
+func (cmd *Cmd) SetOutputChan(outputChan chan string) {
+	cmd.OutputChan = outputChan
 }
 
 // SetOutputPrefix setter function to set OutputPrefix
-func SetOutputPrefix(prefix string) {
-	OutputPrefix = prefix
+func (cmd *Cmd) SetOutputPrefix(prefix string) {
+	cmd.OutputPrefix = prefix
 }
 
-// CmdStart creates exec.Command and calls Start()
-func CmdStart(commandName string, arg ...string) error {
-	// run protoc command (protoc --go_out=plugins=grpc:. $proto)
-	// execute cmd
-	cmd := exec.Command(commandName, arg...)
-
+// StartWithOutput creates exec.Command and calls Start()
+func (cmd *Cmd) StartWithOutput() error {
 	// set prefix for pipe scanners
-	prefix := commandName
-	if OutputPrefix != "" {
-		prefix = OutputPrefix
+	prefix := cmd.Cmd.Path
+	if cmd.OutputPrefix != "" {
+		prefix = cmd.OutputPrefix
 	}
 
 	// go routines to scan command out and err
@@ -45,8 +50,8 @@ func CmdStart(commandName string, arg ...string) error {
 		return err
 	}
 
-	// start the command
-	return start(cmd)
+	// start the exec.Cmd
+	return start(cmd.Cmd)
 }
 
 func start(cmd *exec.Cmd) error {
@@ -63,13 +68,13 @@ func start(cmd *exec.Cmd) error {
 
 // Create stdout, and stderr pipes for given *Cmd
 // Only works with cmd.Start()
-func createPipeScanners(cmd *exec.Cmd, prefix string) error {
-	stdout, err := cmd.StdoutPipe()
+func createPipeScanners(cmd *Cmd, prefix string) error {
+	stdout, err := cmd.Cmd.StdoutPipe()
 	if err != nil {
 		return fmt.Errorf(bold("ERROR:")+"\n  Error: %s", err.Error())
 	}
 
-	stderr, err := cmd.StderrPipe()
+	stderr, err := cmd.Cmd.StderrPipe()
 	if err != nil {
 		return fmt.Errorf(bold("ERROR:")+"\n  Error: %s", err.Error())
 	}
@@ -81,23 +86,23 @@ func createPipeScanners(cmd *exec.Cmd, prefix string) error {
 	// Scan for text
 	go func() {
 		for errScanner.Scan() {
-			scannerOutput(prefix, errScanner.Text())
+			cmd.scannerOutput(prefix, errScanner.Text())
 		}
 	}()
 
 	go func() {
 		for outScanner.Scan() {
-			scannerOutput(prefix, outScanner.Text())
+			cmd.scannerOutput(prefix, outScanner.Text())
 		}
 	}()
 
 	return nil
 }
 
-func scannerOutput(prefix string, text string) {
+func (cmd *Cmd) scannerOutput(prefix string, text string) {
 	out := fmt.Sprintf("[%s] %s\n", prefix, text)
-	if OutputChan != nil {
-		OutputChan <- out
+	if cmd.OutputChan != nil {
+		cmd.OutputChan <- out
 	} else {
 		fmt.Println(out)
 	}
