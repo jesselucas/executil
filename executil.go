@@ -48,13 +48,7 @@ func (c *Cmd) Run() error {
 func (c *Cmd) Start() error {
 	// go routines to scan command out and err
 	if c.ShowOutput {
-		// set prefix for pipe scanners
-		prefix := c.Cmd.Path
-		if c.OutputPrefix != "" {
-			prefix = c.OutputPrefix
-		}
-
-		err := createPipeScanners(c, prefix)
+		err := c.createPipeScanners()
 		if err != nil {
 			return err
 		}
@@ -95,7 +89,13 @@ func (c *Cmd) Wait() error {
 
 // Create stdout, and stderr pipes for given *Cmd
 // Only works with cmd.Start()
-func createPipeScanners(c *Cmd, prefix string) error {
+func (c *Cmd) createPipeScanners() error {
+	// set prefix for pipe scanners
+	prefix := c.Cmd.Path
+	if c.OutputPrefix != "" {
+		prefix = c.OutputPrefix
+	}
+
 	stdout, err := c.Cmd.StdoutPipe()
 	if err != nil {
 		return fmt.Errorf(bold("ERROR:")+"\n  Error: %s", err.Error())
